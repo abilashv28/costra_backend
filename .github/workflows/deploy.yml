@@ -35,8 +35,8 @@ jobs:
             echo "Installing dependencies..."
             npm install
 
-            echo "Restarting PM2..."
-            pm2 restart all
+            echo "Restarting PM2 with production environment..."
+            NODE_ENV=production pm2 restart all
 
             echo "PM2 Status:"
             pm2 status

@@ -10,12 +10,13 @@ const sequelize = new Sequelize(
     dialect: "postgres",
     logging: false,
 
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
+      // Make SSL optional via DB_SSL env var. Default: true for remote DB, false for local.
+      dialectOptions: process.env.DB_SSL === "false" ? {} : {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
       },
-    },
   }
 );
 

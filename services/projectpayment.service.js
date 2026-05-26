@@ -16,11 +16,23 @@ exports.createProjectPayment = async (projectId, data, userId) => {
     throw new Error("Payment stage not found");
   }
 
-  return await db.ProjectPayment.create({
+  // Calculate GST amount server-side if applicable
+  const payload = {
     ...data,
     project_id: projectId,
     stage_name: stage.name,
-  });
+  };
+
+  if (payload.gst_applicable) {
+    const percent = parseFloat(payload.gst_percent) || 0;
+    const amt = parseFloat(payload.amount) || 0;
+    payload.gst_amount = parseFloat(((amt * percent) / 100).toFixed(2));
+  } else {
+    payload.gst_amount = null;
+    payload.gst_percent = payload.gst_percent ? payload.gst_percent : null;
+  }
+
+  return await db.ProjectPayment.create(payload);
 };
 
 exports.getProjectPayments = async (projectId, userId) => {
@@ -60,6 +72,18 @@ exports.updateProjectPayment = async (paymentId, data, userId) => {
       throw new Error("Payment stage not found");
     }
     data.stage_name = stage.name;
+  }
+
+  // Recalculate GST if applicable
+  if (data.gst_applicable !== undefined) {
+    if (data.gst_applicable) {
+      const percent = parseFloat(data.gst_percent) || 0;
+      const amt = parseFloat(data.amount !== undefined ? data.amount : payment.amount) || 0;
+      data.gst_amount = parseFloat(((amt * percent) / 100).toFixed(2));
+    } else {
+      data.gst_amount = null;
+      data.gst_percent = data.gst_percent ? data.gst_percent : null;
+    }
   }
 
   return await payment.update(data);

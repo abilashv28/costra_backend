@@ -1,4 +1,6 @@
-require("dotenv").config();
+// Load environment variables from .env.local in development, .env in production
+const envFile = process.env.NODE_ENV === "production" ? ".env" : ".env.local";
+require("dotenv").config({ path: envFile });
 
 const express = require("express");
 const cors = require("cors");

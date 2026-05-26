@@ -2,7 +2,16 @@ const db = require("../models");
 const { Op } = require("sequelize");
 
 exports.createExpense = async (data, userId) => {
-  return await db.Expense.create({ ...data, user_id: userId });
+  const payload = { ...data, user_id: userId };
+  if (payload.gst_applicable) {
+    const percent = parseFloat(payload.gst_percent) || 0;
+    const amt = parseFloat(payload.amount) || 0;
+    payload.gst_amount = parseFloat(((amt * percent) / 100).toFixed(2));
+  } else {
+    payload.gst_amount = null;
+    payload.gst_percent = payload.gst_percent ? payload.gst_percent : null;
+  }
+  return await db.Expense.create(payload);
 };
 
 exports.updateExpense = async (expenseId, data, userId) => {
@@ -10,6 +19,18 @@ exports.updateExpense = async (expenseId, data, userId) => {
   if (!expense || expense.user_id !== userId) {
     throw new Error("Expense not found or unauthorized");
   }
+  // Recalculate GST if applicable
+  if (data.gst_applicable !== undefined) {
+    if (data.gst_applicable) {
+      const percent = parseFloat(data.gst_percent) || 0;
+      const amt = parseFloat(data.amount !== undefined ? data.amount : expense.amount) || 0;
+      data.gst_amount = parseFloat(((amt * percent) / 100).toFixed(2));
+    } else {
+      data.gst_amount = null;
+      data.gst_percent = data.gst_percent ? data.gst_percent : null;
+    }
+  }
+
   return await expense.update(data);
 };
 

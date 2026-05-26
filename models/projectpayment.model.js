@@ -34,6 +34,19 @@ module.exports = (sequelize, DataTypes) => {
         min: 0.01,
       },
     },
+    gst_applicable: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    gst_percent: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
+    },
+    gst_amount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
     payment_mode: {
       type: DataTypes.STRING,
       allowNull: false,
