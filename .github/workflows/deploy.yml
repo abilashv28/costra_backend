@@ -19,10 +19,26 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
+            echo "Connected to EC2"
+
             cd /home/ubuntu/costra_backend
 
+            echo "Current directory:"
+            pwd
+
+            echo "Pulling latest code..."
             git pull origin main
 
+            echo "Latest commit:"
+            git log --oneline -1
+
+            echo "Installing dependencies..."
             npm install
 
+            echo "Restarting PM2..."
             pm2 restart all
+
+            echo "PM2 Status:"
+            pm2 status
+
+            echo "Deployment completed successfully"
