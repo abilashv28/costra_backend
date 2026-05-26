@@ -133,7 +133,11 @@ exports.sendInvitationEmail = async (email, token) => {
 
   await transporter.verify();
 
-  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/set-password?token=${token}`;
+  if (!process.env.FRONTEND_URL) {
+    throw createError("FRONTEND_URL must be configured in environment variables", 500);
+  }
+
+  const resetUrl = `${process.env.FRONTEND_URL}/set-password?token=${token}`;
 
   const mailOptions = {
     from: process.env.SMTP_USER,
@@ -331,7 +335,11 @@ exports.sendPasswordResetEmail = async (email, token) => {
 
   await transporter.verify();
 
-  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${token}`;
+  if (!process.env.FRONTEND_URL) {
+    throw createError("FRONTEND_URL must be configured in environment variables", 500);
+  }
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   const mailOptions = {
     from: process.env.SMTP_USER,
