@@ -9,7 +9,21 @@ const db = require("./models");
 const { responseWrapper } = require("./utils/response");
 
 // Middleware
-app.use(cors());
+const liveFrontendUrl = process.env.FRONTEND_URL || "https://costra.truthordarefun.com";
+const localFrontendUrl = process.env.LOCAL_FRONTEND_URL || "http://localhost:5173";
+const allowedOrigins = [liveFrontendUrl, localFrontendUrl];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(responseWrapper);
 
