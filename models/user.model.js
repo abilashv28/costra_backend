@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
     is_active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false, // Users are inactive until they set their password
+      defaultValue: true, // New users are active by default. Invitation-only users override this to false.
     },
   }, {
     tableName: 'users',
