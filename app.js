@@ -36,7 +36,19 @@ app.use(cors({
     return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  // Allow common request headers including browser client hints. If you
+  // prefer stricter control, set `FRONTEND_URLS` and enumerate required headers.
+  allowedHeaders: [
+    "Origin",
+    "Accept",
+    "Content-Type",
+    "Authorization",
+    "Referer",
+    "User-Agent",
+    "sec-ch-ua",
+    "sec-ch-ua-platform",
+    "sec-ch-ua-mobile",
+  ],
   credentials: true,
 }));
 app.use(express.json());
