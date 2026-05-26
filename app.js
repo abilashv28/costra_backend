@@ -11,13 +11,28 @@ const { responseWrapper } = require("./utils/response");
 // Middleware
 const liveFrontendUrl = process.env.FRONTEND_URL || "https://costra.truthordarefun.com";
 const localFrontendUrl = process.env.LOCAL_FRONTEND_URL || "http://localhost:5173";
-const allowedOrigins = [liveFrontendUrl, localFrontendUrl];
+
+// Build an explicit allowlist. You can override by setting `FRONTEND_URLS` to a
+// comma-separated list of allowed origins (e.g. "https://costra.truthordarefun.com,https://www.costra.truthordarefun.com").
+let allowedOrigins = [];
+if (process.env.FRONTEND_URLS) {
+  allowedOrigins = process.env.FRONTEND_URLS.split(",").map(s => s.trim()).filter(Boolean);
+} else {
+  try {
+    const host = new URL(liveFrontendUrl).hostname.replace(/^www\./, "");
+    allowedOrigins = [liveFrontendUrl, `https://www.${host}`, localFrontendUrl];
+  } catch (e) {
+    allowedOrigins = [liveFrontendUrl, localFrontendUrl];
+  }
+}
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    // Allow non-browser requests (e.g., server-to-server) when origin is undefined
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
     return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
