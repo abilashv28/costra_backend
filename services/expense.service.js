@@ -1,5 +1,6 @@
 const db = require("../models");
 const { Op } = require("sequelize");
+const auditlogService = require("./auditlog.service");
 
 exports.createExpense = async (data, userId) => {
   const payload = { ...data, user_id: userId };
@@ -11,7 +12,9 @@ exports.createExpense = async (data, userId) => {
     payload.gst_amount = null;
     payload.gst_percent = payload.gst_percent ? payload.gst_percent : null;
   }
-  return await db.Expense.create(payload);
+  const expense = await db.Expense.create(payload);
+  await auditlogService.logAction(userId, "CREATE", "Expense", expense.id, null, expense.toJSON(), `Created expense for project ${expense.project_id}`);
+  return expense;
 };
 
 exports.updateExpense = async (expenseId, data, userId) => {
@@ -31,7 +34,10 @@ exports.updateExpense = async (expenseId, data, userId) => {
     }
   }
 
-  return await expense.update(data);
+  const oldData = expense.toJSON();
+  const updatedExpense = await expense.update(data);
+  await auditlogService.logAction(userId, "UPDATE", "Expense", expense.id, oldData, updatedExpense.toJSON(), `Updated expense for project ${expense.project_id}`);
+  return updatedExpense;
 };
 
 exports.deleteExpense = async (expenseId, userId) => {
@@ -39,7 +45,9 @@ exports.deleteExpense = async (expenseId, userId) => {
   if (!expense || expense.user_id !== userId) {
     throw new Error("Expense not found or unauthorized");
   }
+  const oldData = expense.toJSON();
   await expense.destroy();
+  await auditlogService.logAction(userId, "DELETE", "Expense", expense.id, oldData, null, `Deleted expense for project ${expense.project_id}`);
   return { message: "Expense deleted successfully" };
 };
 

@@ -14,6 +14,8 @@ db.Expense = require("./expense.model")(sequelize, Sequelize);
 db.Company = require("./company.model")(sequelize, Sequelize);
 db.ProjectPayment = require("./projectpayment.model")(sequelize, Sequelize);
 db.PaymentStage = require("./paymentStages.model")(sequelize, Sequelize);
+db.Client = require("./client.model")(sequelize, Sequelize);
+db.AuditLog = require("./auditlog.model")(sequelize, Sequelize);
 
 // Associations
 db.User.belongsTo(db.Company, { foreignKey: "company_id", as: "Company" });
@@ -24,6 +26,12 @@ db.User.hasMany(db.User, { foreignKey: "created_by" });
 
 db.User.hasMany(db.Project, { foreignKey: "user_id" });
 db.Project.belongsTo(db.User, { foreignKey: "user_id" });
+
+db.User.hasMany(db.Client, { foreignKey: "user_id" });
+db.Client.belongsTo(db.User, { foreignKey: "user_id" });
+
+db.Client.hasMany(db.Project, { foreignKey: "client_id", as: "projects" });
+db.Project.belongsTo(db.Client, { foreignKey: "client_id", as: "Client" });
 
 db.User.hasMany(db.Expense, { foreignKey: "user_id" });
 db.Expense.belongsTo(db.User, { foreignKey: "user_id" });
@@ -39,5 +47,8 @@ db.ProjectPayment.belongsTo(db.Project, { foreignKey: "project_id" });
 
 db.PaymentStage.hasMany(db.ProjectPayment, { foreignKey: "stage_id", as: "payments" });
 db.ProjectPayment.belongsTo(db.PaymentStage, { foreignKey: "stage_id", as: "stage" });
+
+db.User.hasMany(db.AuditLog, { foreignKey: "user_id" });
+db.AuditLog.belongsTo(db.User, { foreignKey: "user_id" });
 
 module.exports = db;

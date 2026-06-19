@@ -1,7 +1,10 @@
 const db = require("../models");
+const auditlogService = require("./auditlog.service");
 
 exports.createProject = async (data, userId) => {
-  return await db.Project.create({ ...data, user_id: userId });
+  const project = await db.Project.create({ ...data, user_id: userId });
+  await auditlogService.logAction(userId, "CREATE", "Project", project.id, null, project.toJSON(), `Created project ${project.name}`);
+  return project;
 };
 
 exports.updateProject = async (projectId, data, userId) => {
@@ -9,7 +12,10 @@ exports.updateProject = async (projectId, data, userId) => {
   if (!project || project.user_id !== userId) {
     throw new Error("Project not found or unauthorized");
   }
-  return await project.update(data);
+  const oldData = project.toJSON();
+  const updatedProject = await project.update(data);
+  await auditlogService.logAction(userId, "UPDATE", "Project", project.id, oldData, updatedProject.toJSON(), `Updated project ${project.name}`);
+  return updatedProject;
 };
 
 exports.deleteProject = async (projectId, userId) => {
@@ -17,7 +23,9 @@ exports.deleteProject = async (projectId, userId) => {
   if (!project || project.user_id !== userId) {
     throw new Error("Project not found or unauthorized");
   }
+  const oldData = project.toJSON();
   await project.destroy();
+  await auditlogService.logAction(userId, "DELETE", "Project", project.id, oldData, null, `Deleted project ${project.name}`);
   return { message: "Project deleted successfully" };
 };
 

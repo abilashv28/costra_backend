@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: DataTypes.STRING,
     client_name: DataTypes.STRING,
+    client_id: { type: DataTypes.INTEGER, allowNull: true },
     budget: DataTypes.FLOAT,
     location: DataTypes.TEXT,
     projecttype: {
