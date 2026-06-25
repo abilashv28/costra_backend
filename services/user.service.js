@@ -20,6 +20,15 @@ const createError = (message, status = 400) => {
   return error;
 };
 
+exports.getCompanyUserIds = async (userId, companyId) => {
+  if (!companyId) return [userId];
+  const users = await db.User.findAll({
+    where: { company_id: companyId },
+    attributes: ['id']
+  });
+  return users.map(u => u.id);
+};
+
 exports.getUsers = async (currentUser) => {
   const users = await db.User.findAll({
     where: {

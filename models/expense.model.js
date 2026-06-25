@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     expense_date: DataTypes.DATE,
     notes: DataTypes.TEXT,
     file_url: { type: DataTypes.TEXT, allowNull: true },
+    vendor_id: { type: DataTypes.INTEGER, allowNull: true },
   }, {
     tableName: "expenses",
     timestamps: true,

@@ -1,9 +1,11 @@
 const db = require("../models");
+const userService = require("./user.service");
 
-exports.createProjectPayment = async (projectId, data, userId) => {
-  // Verify project exists and belongs to user
+exports.createProjectPayment = async (projectId, data, user) => {
+  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+  // Verify project exists and belongs to company
   const project = await db.Project.findByPk(projectId);
-  if (!project || project.user_id !== userId) {
+  if (!project || !companyUserIds.includes(project.user_id)) {
     throw new Error("Project not found or unauthorized");
   }
 
@@ -35,10 +37,11 @@ exports.createProjectPayment = async (projectId, data, userId) => {
   return await db.ProjectPayment.create(payload);
 };
 
-exports.getProjectPayments = async (projectId, userId) => {
+exports.getProjectPayments = async (projectId, user) => {
+  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
   // Verify project exists and belongs to user
   const project = await db.Project.findByPk(projectId);
-  if (!project || project.user_id !== userId) {
+  if (!project || !companyUserIds.includes(project.user_id)) {
     throw new Error("Project not found or unauthorized");
   }
 
@@ -48,7 +51,8 @@ exports.getProjectPayments = async (projectId, userId) => {
   });
 };
 
-exports.updateProjectPayment = async (paymentId, data, userId) => {
+exports.updateProjectPayment = async (paymentId, data, user) => {
+  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
   const payment = await db.ProjectPayment.findByPk(paymentId, {
     include: [
       {
@@ -62,7 +66,7 @@ exports.updateProjectPayment = async (paymentId, data, userId) => {
     throw new Error("Payment not found");
   }
 
-  if (payment.Project.user_id !== userId) {
+  if (!companyUserIds.includes(payment.Project.user_id)) {
     throw new Error("Unauthorized");
   }
 
@@ -89,7 +93,8 @@ exports.updateProjectPayment = async (paymentId, data, userId) => {
   return await payment.update(data);
 };
 
-exports.deleteProjectPayment = async (paymentId, userId) => {
+exports.deleteProjectPayment = async (paymentId, user) => {
+  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
   const payment = await db.ProjectPayment.findByPk(paymentId, {
     include: [
       {
@@ -103,7 +108,7 @@ exports.deleteProjectPayment = async (paymentId, userId) => {
     throw new Error("Payment not found");
   }
 
-  if (payment.Project.user_id !== userId) {
+  if (!companyUserIds.includes(payment.Project.user_id)) {
     throw new Error("Unauthorized");
   }
 
@@ -111,7 +116,8 @@ exports.deleteProjectPayment = async (paymentId, userId) => {
   return { message: "Payment deleted successfully" };
 };
 
-exports.getProjectPaymentById = async (paymentId, userId) => {
+exports.getProjectPaymentById = async (paymentId, user) => {
+  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
   const payment = await db.ProjectPayment.findByPk(paymentId, {
     include: [
       {
@@ -125,7 +131,7 @@ exports.getProjectPaymentById = async (paymentId, userId) => {
     throw new Error("Payment not found");
   }
 
-  if (payment.Project.user_id !== userId) {
+  if (!companyUserIds.includes(payment.Project.user_id)) {
     throw new Error("Unauthorized");
   }
 

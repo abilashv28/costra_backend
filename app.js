@@ -87,6 +87,7 @@ const companyRoutes = require("./routes/company.routes");
 const userRoutes = require("./routes/user.routes");
 const clientRoutes = require("./routes/client.routes");
 const auditLogRoutes = require("./routes/auditlog.routes");
+const vendorRoutes = require("./routes/vendor.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
@@ -99,6 +100,7 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/vendors", vendorRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
