@@ -84,10 +84,12 @@ const categoryRoutes = require("./routes/category.routes");
 const attachmentRoutes = require("./routes/attachment.routes");
 const paymentStagesRoutes = require("./routes/paymentStages.routes");
 const companyRoutes = require("./routes/company.routes");
-const userRoutes = require("./routes/user.routes");
 const clientRoutes = require("./routes/client.routes");
-const auditLogRoutes = require("./routes/auditlog.routes");
 const vendorRoutes = require("./routes/vendor.routes");
+const employeeRoutes = require("./routes/employee.routes");
+const workerRoutes = require("./routes/worker.routes");
+const expenseRequestRoutes = require("./routes/expenserequest.routes");
+const notificationRoutes = require("./routes/notification.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
@@ -97,10 +99,12 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/attachments", attachmentRoutes);
 app.use("/api/payment-stages", paymentStagesRoutes);
 app.use("/api/companies", companyRoutes);
-app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
-app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/vendors", vendorRoutes);
+app.use("/api/employees", employeeRoutes);
+app.use("/api/workers", workerRoutes);
+app.use("/api/expense-requests", expenseRequestRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

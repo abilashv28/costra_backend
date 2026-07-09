@@ -1,26 +1,26 @@
 const db = require("../models");
 
-const userService = require("./user.service");
+const employeeService = require("./employee.service");
 
-exports.createVendor = async (data, user) => {
+exports.createVendor = async (data, employee) => {
   return await db.Vendor.create({
     ...data,
-    user_id: user.id,
+    recorded_by: employee.id,
   });
 };
 
-exports.updateVendor = async (vendorId, data, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
-  const vendor = await db.Vendor.findOne({ where: { id: vendorId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } });
+exports.updateVendor = async (vendorId, data, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  const vendor = await db.Vendor.findOne({ where: { id: vendorId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } });
   if (!vendor) throw new Error("Vendor not found");
 
   await vendor.update(data);
   return vendor;
 };
 
-exports.deleteVendor = async (vendorId, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
-  const vendor = await db.Vendor.findOne({ where: { id: vendorId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } });
+exports.deleteVendor = async (vendorId, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  const vendor = await db.Vendor.findOne({ where: { id: vendorId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } });
   if (!vendor) throw new Error("Vendor not found");
 
   // Optional: Check if associated with projects/expenses before deletion
@@ -35,9 +35,9 @@ exports.deleteVendor = async (vendorId, user) => {
   return { message: "Vendor deleted successfully" };
 };
 
-exports.getVendors = async (user, search) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
-  const where = { user_id: { [db.Sequelize.Op.in]: companyUserIds } };
+exports.getVendors = async (employee, search) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  const where = { recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } };
   if (search) {
     where[db.Sequelize.Op.or] = [
       { name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
@@ -54,13 +54,13 @@ exports.getVendors = async (user, search) => {
   });
 };
 
-exports.assignToProject = async (vendorId, projectId, notes, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.assignToProject = async (vendorId, projectId, notes, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   // Verify ownership
-  const vendor = await db.Vendor.findOne({ where: { id: vendorId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } });
+  const vendor = await db.Vendor.findOne({ where: { id: vendorId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } });
   if (!vendor) throw new Error("Vendor not found");
   
-  const project = await db.Project.findOne({ where: { id: projectId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } });
+  const project = await db.Project.findOne({ where: { id: projectId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } });
   if (!project) throw new Error("Project not found");
 
   await db.ProjectVendor.create({
@@ -72,10 +72,10 @@ exports.assignToProject = async (vendorId, projectId, notes, user) => {
   return { message: "Vendor assigned to project successfully" };
 };
 
-exports.getProjectVendors = async (projectId, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.getProjectVendors = async (projectId, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   const project = await db.Project.findOne({ 
-    where: { id: projectId, user_id: { [db.Sequelize.Op.in]: companyUserIds } },
+    where: { id: projectId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } },
     include: [{
       model: db.Vendor,
       as: 'vendors',

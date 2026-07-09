@@ -1,8 +1,17 @@
-module.exports = function requireRole(allowedRoles = []) {
+module.exports = (roles) => {
   return (req, res, next) => {
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: "You are not authorized to access this resource" });
+    if (!req.employee) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
-    next();
+    const role = req.employee.role?.toString().trim().toLowerCase();
+    
+    // Convert allowed roles to lowercase for comparison
+    const normalizedRoles = roles.map(r => r.toLowerCase());
+    
+    if (normalizedRoles.includes(role)) {
+      next();
+    } else {
+      return res.status(403).json({ message: "Forbidden: You don't have enough privileges" });
+    }
   };
 };

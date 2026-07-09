@@ -11,13 +11,13 @@ module.exports = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const secret = process.env.JWT_SECRET || "secret-key";
     const payload = jwt.verify(token, secret);
-    const user = await db.User.findByPk(payload.id);
+    const employee = await db.Employee.findByPk(payload.id);
 
-    if (!user) {
+    if (!employee) {
       return res.status(401).json({ message: "Invalid token" });
     }
 
-    req.user = user;
+    req.employee = employee;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Unauthorized" });

@@ -15,7 +15,7 @@ router.post(
     const payment = await projectPaymentService.createProjectPayment(
       projectId,
       req.body,
-      req.user
+      req.employee
     );
     res.status(201).json(payment);
   } catch (err) {
@@ -33,7 +33,7 @@ router.get(
       const projectId = req.params.projectId;
       const payments = await projectPaymentService.getProjectPayments(
         projectId,
-        req.user
+        req.employee
       );
       res.json(payments);
     } catch (err) {
@@ -51,7 +51,7 @@ router.get(
   try {
     const payment = await projectPaymentService.getProjectPaymentById(
       req.params.id,
-      req.user
+      req.employee
     );
     res.json(payment);
   } catch (err) {
@@ -69,7 +69,7 @@ router.put(
       const payment = await projectPaymentService.updateProjectPayment(
         req.params.id,
         req.body,
-        req.user
+        req.employee
       );
       res.json(payment);
     } catch (err) {
@@ -87,7 +87,7 @@ router.delete(
   try {
     const result = await projectPaymentService.deleteProjectPayment(
       req.params.id,
-      req.user
+      req.employee
     );
     res.json(result);
   } catch (err) {

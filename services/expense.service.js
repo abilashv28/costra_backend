@@ -1,10 +1,9 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const auditlogService = require("./auditlog.service");
-const userService = require("./user.service");
+const employeeService = require("./employee.service");
 
-exports.createExpense = async (data, user) => {
-  const payload = { ...data, user_id: user.id };
+exports.createExpense = async (data, employee) => {
+  const payload = { ...data, recorded_by: employee.id };
   if (payload.gst_applicable) {
     const percent = parseFloat(payload.gst_percent) || 0;
     const amt = parseFloat(payload.amount) || 0;
@@ -14,14 +13,13 @@ exports.createExpense = async (data, user) => {
     payload.gst_percent = payload.gst_percent ? payload.gst_percent : null;
   }
   const expense = await db.Expense.create(payload);
-  await auditlogService.logAction(user.id, "CREATE", "Expense", expense.id, null, expense.toJSON(), `Created expense for project ${expense.project_id}`);
   return expense;
 };
 
-exports.updateExpense = async (expenseId, data, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.updateExpense = async (expenseId, data, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   const expense = await db.Expense.findOne({
-    where: { id: expenseId, user_id: { [Op.in]: companyUserIds } }
+    where: { id: expenseId, recorded_by: { [Op.in]: companyEmployeeIds } }
   });
   if (!expense) {
     throw new Error("Expense not found or unauthorized");
@@ -40,27 +38,25 @@ exports.updateExpense = async (expenseId, data, user) => {
 
   const oldData = expense.toJSON();
   const updatedExpense = await expense.update(data);
-  await auditlogService.logAction(user.id, "UPDATE", "Expense", expense.id, oldData, updatedExpense.toJSON(), `Updated expense for project ${expense.project_id}`);
   return updatedExpense;
 };
 
-exports.deleteExpense = async (expenseId, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.deleteExpense = async (expenseId, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   const expense = await db.Expense.findOne({
-    where: { id: expenseId, user_id: { [Op.in]: companyUserIds } }
+    where: { id: expenseId, recorded_by: { [Op.in]: companyEmployeeIds } }
   });
   if (!expense) {
     throw new Error("Expense not found or unauthorized");
   }
   const oldData = expense.toJSON();
   await expense.destroy();
-  await auditlogService.logAction(user.id, "DELETE", "Expense", expense.id, oldData, null, `Deleted expense for project ${expense.project_id}`);
   return { message: "Expense deleted successfully" };
 };
 
-exports.getExpenses = async (filters = {}, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
-  const where = { user_id: { [Op.in]: companyUserIds } };
+exports.getExpenses = async (filters = {}, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  const where = { recorded_by: { [Op.in]: companyEmployeeIds } };
 
   if (filters.projectId) {
     where.project_id = filters.projectId;

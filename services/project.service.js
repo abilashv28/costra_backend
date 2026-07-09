@@ -1,44 +1,67 @@
 const db = require("../models");
-const auditlogService = require("./auditlog.service");
-const userService = require("./user.service");
+const employeeService = require("./employee.service");
 
-exports.createProject = async (data, user) => {
-  const project = await db.Project.create({ ...data, user_id: user.id });
-  await auditlogService.logAction(user.id, "CREATE", "Project", project.id, null, project.toJSON(), `Created project ${project.name}`);
+exports.createProject = async (data, employee) => {
+  const project = await db.Project.create({ ...data, recorded_by: employee.id });
   return project;
 };
 
-exports.updateProject = async (projectId, data, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
-  const project = await db.Project.findOne({ 
-    where: { id: projectId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
-  });
+exports.updateProject = async (projectId, data, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  
+  let whereClause = { id: projectId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } };
+  
+  if (employee.role !== 'admin' && employee.role !== 'superadmin') {
+    const employeeProjects = await db.EmployeeProject.findAll({ where: { employee_id: employee.id } });
+    const projectIds = employeeProjects.map(up => up.project_id);
+    if (!projectIds.includes(parseInt(projectId))) {
+      throw new Error("Project not found or unauthorized");
+    }
+  }
+
+  const project = await db.Project.findOne({ where: whereClause });
   if (!project) {
     throw new Error("Project not found or unauthorized");
   }
-  const oldData = project.toJSON();
   const updatedProject = await project.update(data);
-  await auditlogService.logAction(userId, "UPDATE", "Project", project.id, oldData, updatedProject.toJSON(), `Updated project ${project.name}`);
   return updatedProject;
 };
 
-exports.deleteProject = async (projectId, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.deleteProject = async (projectId, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  
+  if (employee.role !== 'admin' && employee.role !== 'superadmin') {
+    throw new Error("Unauthorized to delete project");
+  }
+
   const project = await db.Project.findOne({ 
-    where: { id: projectId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
+    where: { id: projectId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } 
   });
   if (!project) {
     throw new Error("Project not found or unauthorized");
   }
-  const oldData = project.toJSON();
   await project.destroy();
-  await auditlogService.logAction(userId, "DELETE", "Project", project.id, oldData, null, `Deleted project ${project.name}`);
   return { message: "Project deleted successfully" };
 };
 
-exports.getProjects = async (user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.getProjects = async (employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
+  
+  if (employee.role === 'admin' || employee.role === 'superadmin') {
+    return await db.Project.findAll({ 
+      where: { recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } 
+    });
+  }
+
+  const employeeProjects = await db.EmployeeProject.findAll({
+    where: { employee_id: employee.id }
+  });
+  const projectIds = employeeProjects.map(up => up.project_id);
+
   return await db.Project.findAll({ 
-    where: { user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
+    where: { 
+      id: { [db.Sequelize.Op.in]: projectIds },
+      recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } 
+    } 
   });
 };

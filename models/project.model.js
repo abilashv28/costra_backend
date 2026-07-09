@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'interior'
     },
-    user_id: { type: DataTypes.INTEGER, allowNull: false },
+    recorded_by: { type: DataTypes.INTEGER, allowNull: false },
   }, {
     tableName: "projects",
     timestamps: true,

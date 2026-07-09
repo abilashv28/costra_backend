@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const client = await clientService.createClient(req.body, req.user);
+    const client = await clientService.createClient(req.body, req.employee);
     res.json(client);
   } catch (err) {
     next(err);
@@ -14,7 +14,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
 router.put("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const client = await clientService.updateClient(req.params.id, req.body, req.user);
+    const client = await clientService.updateClient(req.params.id, req.body, req.employee);
     res.json(client);
   } catch (err) {
     next(err);
@@ -23,7 +23,7 @@ router.put("/:id", authMiddleware, async (req, res, next) => {
 
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const result = await clientService.deleteClient(req.params.id, req.user);
+    const result = await clientService.deleteClient(req.params.id, req.employee);
     res.json(result);
   } catch (err) {
     if (err.message.includes("Cannot delete")) {
@@ -35,7 +35,7 @@ router.delete("/:id", authMiddleware, async (req, res, next) => {
 
 router.get("/", authMiddleware, async (req, res, next) => {
   try {
-    const clients = await clientService.getClients(req.user);
+    const clients = await clientService.getClients(req.employee);
     res.json(clients);
   } catch (err) {
     next(err);

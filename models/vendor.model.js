@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     service_type: DataTypes.STRING, // e.g., Plumber, Electrician
     gst_number: DataTypes.STRING,
     address: DataTypes.TEXT,
-    user_id: { type: DataTypes.INTEGER, allowNull: false },
+    recorded_by: { type: DataTypes.INTEGER, allowNull: false },
   }, {
     tableName: "vendors",
     timestamps: true,

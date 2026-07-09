@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const project = await projectService.createProject(req.body, req.user);
+    const project = await projectService.createProject(req.body, req.employee);
     res.json(project);
   } catch (err) {
     next(err);
@@ -14,7 +14,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
 router.put("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const project = await projectService.updateProject(req.params.id, req.body, req.user);
+    const project = await projectService.updateProject(req.params.id, req.body, req.employee);
     res.json(project);
   } catch (err) {
     next(err);
@@ -23,7 +23,7 @@ router.put("/:id", authMiddleware, async (req, res, next) => {
 
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const result = await projectService.deleteProject(req.params.id, req.user);
+    const result = await projectService.deleteProject(req.params.id, req.employee);
     res.json(result);
   } catch (err) {
     next(err);
@@ -32,7 +32,7 @@ router.delete("/:id", authMiddleware, async (req, res, next) => {
 
 router.get("/", authMiddleware, async (req, res, next) => {
   try {
-    const projects = await projectService.getProjects(req.user);
+    const projects = await projectService.getProjects(req.employee);
     res.json(projects);
   } catch (err) {
     next(err);

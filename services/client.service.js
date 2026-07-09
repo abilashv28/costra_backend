@@ -1,31 +1,28 @@
 const db = require("../models");
-const auditlogService = require("./auditlog.service");
-const userService = require("./user.service");
+const employeeService = require("./employee.service");
 
-exports.createClient = async (data, user) => {
-  const client = await db.Client.create({ ...data, user_id: user.id });
-  await auditlogService.logAction(user.id, "CREATE", "Client", client.id, null, client.toJSON(), `Created client ${client.name}`);
+exports.createClient = async (data, employee) => {
+  const client = await db.Client.create({ ...data, recorded_by: employee.id });
   return client;
 };
 
-exports.updateClient = async (clientId, data, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.updateClient = async (clientId, data, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   const client = await db.Client.findOne({ 
-    where: { id: clientId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
+    where: { id: clientId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } 
   });
   if (!client) {
     throw new Error("Client not found or unauthorized");
   }
   const oldData = client.toJSON();
   const updatedClient = await client.update(data);
-  await auditlogService.logAction(user.id, "UPDATE", "Client", client.id, oldData, updatedClient.toJSON(), `Updated client ${client.name}`);
   return updatedClient;
 };
 
-exports.deleteClient = async (clientId, user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.deleteClient = async (clientId, employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   const client = await db.Client.findOne({ 
-    where: { id: clientId, user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
+    where: { id: clientId, recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } 
   });
   if (!client) {
     throw new Error("Client not found or unauthorized");
@@ -39,13 +36,12 @@ exports.deleteClient = async (clientId, user) => {
 
   const oldData = client.toJSON();
   await client.destroy();
-  await auditlogService.logAction(user.id, "DELETE", "Client", client.id, oldData, null, `Deleted client ${client.name}`);
   return { message: "Client deleted successfully" };
 };
 
-exports.getClients = async (user) => {
-  const companyUserIds = await userService.getCompanyUserIds(user.id, user.company_id);
+exports.getClients = async (employee) => {
+  const companyEmployeeIds = await employeeService.getCompanyEmployeeIds(employee.id, employee.company_id);
   return await db.Client.findAll({ 
-    where: { user_id: { [db.Sequelize.Op.in]: companyUserIds } } 
+    where: { recorded_by: { [db.Sequelize.Op.in]: companyEmployeeIds } } 
   });
 };

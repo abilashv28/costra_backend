@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const vendor = await vendorService.createVendor(req.body, req.user);
+    const vendor = await vendorService.createVendor(req.body, req.employee);
     res.json(vendor);
   } catch (err) {
     next(err);
@@ -14,7 +14,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
 router.put("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const vendor = await vendorService.updateVendor(req.params.id, req.body, req.user);
+    const vendor = await vendorService.updateVendor(req.params.id, req.body, req.employee);
     res.json(vendor);
   } catch (err) {
     next(err);
@@ -23,7 +23,7 @@ router.put("/:id", authMiddleware, async (req, res, next) => {
 
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
-    const result = await vendorService.deleteVendor(req.params.id, req.user);
+    const result = await vendorService.deleteVendor(req.params.id, req.employee);
     res.json(result);
   } catch (err) {
     if (err.message.includes("Cannot delete")) {
@@ -36,7 +36,7 @@ router.delete("/:id", authMiddleware, async (req, res, next) => {
 router.get("/", authMiddleware, async (req, res, next) => {
   try {
     const { location, service_type } = req.query;
-    const vendors = await vendorService.getVendors(req.user, location, service_type);
+    const vendors = await vendorService.getVendors(req.employee, location, service_type);
     res.json(vendors);
   } catch (err) {
     next(err);
@@ -46,7 +46,7 @@ router.get("/", authMiddleware, async (req, res, next) => {
 router.post("/:id/assign-project", authMiddleware, async (req, res, next) => {
   try {
     const { project_id, notes } = req.body;
-    const result = await vendorService.assignToProject(req.params.id, project_id, notes, req.user);
+    const result = await vendorService.assignToProject(req.params.id, project_id, notes, req.employee);
     res.json(result);
   } catch (err) {
     next(err);
@@ -55,7 +55,7 @@ router.post("/:id/assign-project", authMiddleware, async (req, res, next) => {
 
 router.get("/project/:projectId", authMiddleware, async (req, res, next) => {
   try {
-    const vendors = await vendorService.getProjectVendors(req.params.projectId, req.user);
+    const vendors = await vendorService.getProjectVendors(req.params.projectId, req.employee);
     res.json(vendors);
   } catch (err) {
     next(err);
